@@ -1,9 +1,9 @@
 # app.py
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from sklearn.neural_network import MLPRegressor
 import numpy as np
 
-app = Flask(__name__, template_folder='.')
+app = Flask(__name__)
 
 # ==========================================
 # 1. SOFT COMPUTING: ANN MODEL SETUP
@@ -21,16 +21,9 @@ y_train = np.array([85, 30, 95, 10, 60])
 
 # Initialize and train the Artificial Neural Network
 # Hidden layers: One layer of 10 neurons, one layer of 5 neurons
+from sklearn.neural_network import MLPRegressor
 ann_model = MLPRegressor(hidden_layer_sizes=(10, 5), max_iter=1000, random_state=42)
 ann_model.fit(X_train, y_train)
-
-# ==========================================
-# 2. WEB SERVER ROUTES
-# ==========================================
-@app.route('/')
-def home():
-    # Serves the frontend UI
-    return render_template('index.html')
 
 @app.route('/optimize', methods=['POST'])
 def optimize():
