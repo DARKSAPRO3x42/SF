@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify, render_template
 from sklearn.neural_network import MLPRegressor
 import numpy as np
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 
 # ==========================================
 # 1. SOFT COMPUTING: ANN MODEL SETUP
