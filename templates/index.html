@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANN Job Optimization | Soft Computing</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .job-card {
+            background: #fdfdfd;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+        }
+
+        .btn-add {
+            background: #3498db;
+        }
+
+        .btn-run {
+            background: #2ecc71;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .result-box {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #e8f8f5;
+            border-left: 5px solid #1abc9c;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Job Queue Optimizer (ANN)</h2>
+        <p style="text-align: center; color: #666;">Enter pending jobs below to calculate their optimal execution order
+            using Neural Networks.</p>
+
+        <div id="jobInputs"></div>
+
+        <div class="btn-group">
+            <button class="btn-add" onclick="addJob()">+ Add Another Job</button>
+            <button class="btn-run" onclick="optimizeJobs()">Run ANN Optimization</button>
+        </div>
+
+        <div id="results" class="result-box">
+            <h3>Optimized Execution Schedule</h3>
+            <ol id="scheduleList"></ol>
+        </div>
+    </div>
+
+    <script>
+        let jobCount = 0;
+
+        // Function to dynamically add input fields for new jobs
+        function addJob() {
+            jobCount++;
+            const div = document.createElement('div');
+            div.className = 'job-card';
+            div.innerHTML = `
+                <strong>Job ${jobCount}</strong>
+                <input type="number" id="time_${jobCount}" placeholder="Processing Time (e.g., 10 ms)" value="10">
+                <input type="number" id="mem_${jobCount}" placeholder="Memory Required (e.g., 2 GB)" value="2">
+                <input type="number" id="urgency_${jobCount}" placeholder="Urgency Level (1-10)" value="5">
+            `;
+            document.getElementById('jobInputs').appendChild(div);
+        }
+
+        // Function to gather data and send to Python API
+        async function optimizeJobs() {
+            const jobs = [];
+            for (let i = 1; i <= jobCount; i++) {
+                jobs.push({
+                    id: `Job ${i}`,
+                    processing_time: parseFloat(document.getElementById(`time_${i}`).value) || 0,
+                    memory: parseFloat(document.getElementById(`mem_${i}`).value) || 0,
+                    urgency: parseFloat(document.getElementById(`urgency_${i}`).value) || 0
+                });
+            }
+
+            // Send POST request to backend
+            const response = await fetch('/optimize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jobs: jobs })
+            });
+
+            const data = await response.json();
+
+            // Render the sorted results
+            const list = document.getElementById('scheduleList');
+            list.innerHTML = '';
+            data.optimized_schedule.forEach(job => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${job.job_id}</strong> (Calculated Priority Score: ${job.priority_score})`;
+                list.appendChild(li);
+            });
+            document.getElementById('results').style.display = 'block';
+        }
+
+        // Initialize with two blank jobs
+        addJob();
+        addJob();
+    </script>
+</body>
+
+</html>
